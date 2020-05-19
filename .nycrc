@@ -5,6 +5,7 @@
   "exclude": [
     "**/*.d.ts",
     "build/**/**/*.js",
+    "docs/**/*.js",
     "src/index.ts",
     "karma.conf.js",
     "src/platform/browser/*.ts",
