@@ -141,6 +141,7 @@ export class FetchInstrumentation extends InstrumentationBase<
    * @param spanUrl
    */
   private _addHeaders(options: Request | RequestInit, spanUrl: string): void {
+    console.log('should propagate', spanUrl, this._getConfig().propagateTraceHeaderCorsUrls);
     if (
       !web.shouldPropagateTraceHeaders(
         spanUrl,
@@ -154,6 +155,7 @@ export class FetchInstrumentation extends InstrumentationBase<
       }
       return;
     }
+    console.log('add header', location.origin);
 
     if (options instanceof Request) {
       api.propagation.inject(api.context.active(), options.headers, {

@@ -155,6 +155,21 @@ describe('fetch', () => {
     lastResponse = undefined;
   };
 
+  const makeResponse = (body: string, init: ResponseInit, url: string | undefined) => {
+    const resp = new Response(body, init);
+    Object.defineProperty(resp, 'url', {
+      value: url,
+    });
+    (resp as any).clone = function () {
+      const cloned = Response.prototype.clone.call(this);
+      Object.defineProperty(cloned, 'url', {
+        value: url,
+      });
+      return cloned;
+    }
+    return resp;
+  }
+
   const prepareData = (
     done: any,
     fileUrl: string,
@@ -172,7 +187,6 @@ describe('fetch', () => {
       return new Promise((resolve, reject) => {
         const response: any = {
           args: {},
-          url: fileUrl,
         };
         response.headers = Object.assign({}, init.headers);
 
@@ -180,19 +194,19 @@ describe('fetch', () => {
           // Passing request as 2nd argument causes missing body bug (#2411)
           response.status = 400;
           response.statusText = 'Bad Request (Request object as 2nd argument)';
-          reject(new window.Response(JSON.stringify(response), response));
+          reject(makeResponse(JSON.stringify(response), response, fileUrl));
         } else if (init.method === 'DELETE') {
           response.status = 405;
           response.statusText = 'OK';
-          resolve(new window.Response('foo', response));
+          resolve(makeResponse('foo', response, fileUrl));
         } else if ((input instanceof Request && input.url === url) || input === url) {
           response.status = 200;
           response.statusText = 'OK';
-          resolve(new window.Response(JSON.stringify(response), response));
+          resolve(makeResponse(JSON.stringify(response), response, fileUrl));
         } else {
           response.status = 404;
           response.statusText = 'Bad request';
-          reject(new window.Response(JSON.stringify(response), response));
+          reject(makeResponse(JSON.stringify(response), response, fileUrl));
         }
       });
     }
@@ -530,13 +544,13 @@ describe('fetch', () => {
     });
 
     it('should set trace headers with a request object', () => {
-      const r = new Request('url');
+      const r = new Request(url);
       window.fetch(r).catch(() => {});
       assert.ok(typeof r.headers.get(X_B3_TRACE_ID) === 'string');
     });
 
     it('should keep custom headers with a request object and a headers object', () => {
-      const r = new Request('url', {
+      const r = new Request(url, {
         headers: new Headers({'foo': 'bar'})
       });
       window.fetch(r).catch(() => {});
@@ -544,7 +558,6 @@ describe('fetch', () => {
     });
 
     it('should keep custom headers with url, untyped request object and typed headers object', () => {
-      const url = 'url';
       const init = {
         headers: new Headers({'foo': 'bar'})
       };
@@ -553,7 +566,6 @@ describe('fetch', () => {
     });
 
     it('should keep custom headers with url, untyped request object and untyped headers object', () => {
-      const url = 'url';
       const init = {
         headers: {'foo': 'bar'}
       };
@@ -690,7 +702,7 @@ describe('fetch', () => {
         request,
         response
       ) => {
-        if(response instanceof Response ){
+        if(response instanceof Response){
           const rsp = await response.json();
           assert.deepStrictEqual(rsp.args, {});
           done();
@@ -814,7 +826,7 @@ describe('fetch', () => {
 
   describe('when fetching with relative url', () => {
     beforeEach(done => {
-      prepareData(done, '/get', {}, undefined, false, true);
+      prepareData(done, new URL('/get', location.origin).toString(), {}, undefined, false, true);
     });
     afterEach(() => {
       clearData();
