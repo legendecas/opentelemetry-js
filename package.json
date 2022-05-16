@@ -16,6 +16,7 @@
     "test": "lerna run test",
     "test:browser": "lerna run test:browser",
     "test:webworker": "lerna run test:webworker",
+    "test:deno": "lerna run test:deno",
     "test:backcompat": "lerna run test:backcompat",
     "bootstrap": "lerna bootstrap --hoist --nohoist='zone.js'",
     "changelog": "lerna-changelog",

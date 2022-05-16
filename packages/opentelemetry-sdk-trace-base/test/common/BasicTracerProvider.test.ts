@@ -359,10 +359,10 @@ describe('BasicTracerProvider', () => {
         const provider = new CustomTracerProvider({});
         provider.register();
         const processor = provider.getActiveSpanProcessor();
-        assert(processor instanceof BatchSpanProcessor);
+        assert.ok(processor instanceof BatchSpanProcessor);
         // @ts-expect-error access configured to verify its the correct one
         const exporter = processor._exporter;
-        assert(exporter instanceof InMemorySpanExporter);
+        assert.ok(exporter instanceof InMemorySpanExporter);
       });
     });
   });
@@ -564,7 +564,7 @@ describe('BasicTracerProvider', () => {
         .forceFlush()
         .then(() => {
           sinon.restore();
-          assert(forceFlushStub.calledTwice);
+          assert.ok(forceFlushStub.calledTwice);
           done();
         })
         .catch(error => {

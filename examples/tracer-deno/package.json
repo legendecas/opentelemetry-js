@@ -1,0 +1,46 @@
+{
+  "name": "deno-tracer-example",
+  "private": true,
+  "version": "0.29.2",
+  "description": "Example of using @opentelemetry/sdk-trace-web in Deno",
+  "main": "index.js",
+  "scripts": {
+    "esbuild": "esbuild --platform=browser --target=esnext --main-fields=esnext,browser,module,main --bundle --sourcemap=inline examples/*/index.js",
+    "compile": "npm run esbuild -- --outdir=build",
+    "start": "npm run esbuild -- --serve=localhost:8090"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/open-telemetry/opentelemetry-js.git"
+  },
+  "keywords": [
+    "opentelemetry",
+    "tracing",
+    "web",
+    "deno"
+  ],
+  "engines": {
+    "node": ">=8"
+  },
+  "author": "OpenTelemetry Authors",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/open-telemetry/opentelemetry-js/issues"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.39"
+  },
+  "dependencies": {
+    "@opentelemetry/api": "^1.0.0",
+    "@opentelemetry/context-zone": "^1.0.1",
+    "@opentelemetry/core": "^1.0.1",
+    "@opentelemetry/sdk-trace-base": "^1.0.1",
+    "@opentelemetry/sdk-trace-web": "^1.0.1",
+    "@opentelemetry/semantic-conventions": "^1.0.1",
+    "@opentelemetry/propagator-b3": "^1.0.1",
+    "@opentelemetry/resources": "^1.0.1",
+    "@opentelemetry/instrumentation": "0.29.2",
+    "@opentelemetry/instrumentation-fetch": "0.29.2"
+  },
+  "homepage": "https://github.com/open-telemetry/opentelemetry-js#readme"
+}

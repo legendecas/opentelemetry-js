@@ -129,3 +129,46 @@ jobs:
         run: npm run test:webworker
       - name: Report Coverage
         run: npm run codecov:webworker
+  deno-tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        deno_version: ["1.22"]
+    runs-on: ubuntu-latest
+    env:
+      NPM_CONFIG_UNSAFE_PERM: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: ${{ matrix.deno_version }}
+
+      - name: restore lerna
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            package-lock.json
+            packages/*/node_modules
+            packages/*/package-lock.json
+            experimental/packages/*/node_modules
+            experimental/packages/*/package-lock.json
+          key: node-tests-${{ runner.os }}-${{ matrix.node_version }}-${{ hashFiles('package.json', 'packages/*/package.json', 'experimental/packages/*/package.json') }}-04292022
+
+      - name: Bootstrap
+        run: |
+          npm install --ignore-scripts
+          npx lerna bootstrap --no-ci --hoist --nohoist='zone.js' --ignore @opentelemetry/selenium-tests
+
+      - name: Build 🔧
+        run: |
+          npm run compile
+          # run additional compilation variants
+          npx lerna run compile
+
+      - name: Unit tests
+        run: npm run test:deno
+      # TODO(legendecas): deno coverage support
