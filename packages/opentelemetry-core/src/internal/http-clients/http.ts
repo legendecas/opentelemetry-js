@@ -14,4 +14,9 @@
  * limitations under the License.
  */
 
-export * from './util';
+import type { AgentOptions } from 'https';
+
+export interface CreateHttpRequestOptions {
+  keepAlive?: boolean;
+  agentOptions?: AgentOptions;
+}

@@ -14,27 +14,6 @@
  * limitations under the License.
  */
 
-import * as assert from 'assert';
-
-/**
- * Node.js v8.x and browser compatible `assert.rejects`.
- */
-export async function assertRejects(
-  actual: any,
-  expected: assert.AssertPredicate
-) {
-  let rejected;
-  try {
-    if (typeof actual === 'function') {
-      await actual();
-    } else {
-      await actual;
-    }
-  } catch (err) {
-    rejected = true;
-    assert.throws(() => {
-      throw err;
-    }, expected);
-  }
-  assert(rejected, 'Promise not rejected');
-}
+export { createHttpRequest, isHttpRequestAvailable } from './node-http';
+export { isSendBeaconRequestAvailable, sendBeaconRequest } from './send-beacon';
+export { isXhrRequestAvailable, xhrRequest } from './xhr';

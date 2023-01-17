@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
+import { internal } from '@opentelemetry/core';
 import { OTLPExporterBase } from '../../OTLPExporterBase';
 import { OTLPExporterConfigBase } from '../../types';
 import * as otlpTypes from '../../types';
 import { parseHeaders } from '../../util';
-import { sendWithBeacon, sendWithXhr } from './util';
 import { diag } from '@opentelemetry/api';
 import { getEnv, baggageUtils } from '@opentelemetry/core';
 
@@ -30,16 +30,15 @@ export abstract class OTLPExporterBrowserBase<
   ServiceRequest
 > extends OTLPExporterBase<OTLPExporterConfigBase, ExportItem, ServiceRequest> {
   protected _headers: Record<string, string>;
-  private _useXHR: boolean = false;
+  private _request: internal.HttpExportClient;
 
   /**
    * @param config
    */
   constructor(config: OTLPExporterConfigBase = {}) {
     super(config);
-    this._useXHR =
-      !!config.headers || typeof navigator.sendBeacon !== 'function';
-    if (this._useXHR) {
+    const preferredClients: internal.HttpClient[] = [];
+    if (config.headers) {
       this._headers = Object.assign(
         {},
         parseHeaders(config.headers),
@@ -47,9 +46,12 @@ export abstract class OTLPExporterBrowserBase<
           getEnv().OTEL_EXPORTER_OTLP_HEADERS
         )
       );
+      preferredClients.push('XMLHttpReuqest');
     } else {
       this._headers = {};
+      preferredClients.push('sendBeacon', 'XMLHttpReuqest');
     }
+    this._request = internal.createHttpExportClient(preferredClients);
   }
 
   onInit(): void {
@@ -72,25 +74,10 @@ export abstract class OTLPExporterBrowserBase<
     const serviceRequest = this.convert(items);
     const body = JSON.stringify(serviceRequest);
 
-    const promise = new Promise<void>((resolve, reject) => {
-      if (this._useXHR) {
-        sendWithXhr(
-          body,
-          this.url,
-          this._headers,
-          this.timeoutMillis,
-          resolve,
-          reject
-        );
-      } else {
-        sendWithBeacon(
-          body,
-          this.url,
-          { type: 'application/json' },
-          resolve,
-          reject
-        );
-      }
+    const promise = this._request(this.url, body, {
+      contentType: 'application/json',
+      headers: this._headers,
+      timeoutMs: this.timeoutMillis,
     }).then(onSuccess, onError);
 
     this._sendingPromises.push(promise);

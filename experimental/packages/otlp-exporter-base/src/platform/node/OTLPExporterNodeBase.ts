@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-import type * as http from 'http';
-import type * as https from 'https';
-
 import { OTLPExporterBase } from '../../OTLPExporterBase';
 import { OTLPExporterNodeConfigBase, CompressionAlgorithm } from './types';
 import * as otlpTypes from '../../types';
 import { parseHeaders } from '../../util';
-import { createHttpAgent, sendWithHttp, configureCompression } from './util';
+import { configureCompression } from './util';
 import { diag } from '@opentelemetry/api';
-import { getEnv, baggageUtils } from '@opentelemetry/core';
+import { getEnv, baggageUtils, internal } from '@opentelemetry/core';
 
 /**
  * Collector Metric Exporter abstract base class
@@ -38,8 +35,8 @@ export abstract class OTLPExporterNodeBase<
 > {
   DEFAULT_HEADERS: Record<string, string> = {};
   headers: Record<string, string>;
-  agent: http.Agent | https.Agent | undefined;
   compression: CompressionAlgorithm;
+  private _request: internal.HttpExportClient;
 
   constructor(config: OTLPExporterNodeConfigBase = {}) {
     super(config);
@@ -52,7 +49,7 @@ export abstract class OTLPExporterNodeBase<
       parseHeaders(config.headers),
       baggageUtils.parseKeyPairsIntoRecord(getEnv().OTEL_EXPORTER_OTLP_HEADERS)
     );
-    this.agent = createHttpAgent(config);
+    this._request = internal.createHttpExportClient(['node:http']);
     this.compression = configureCompression(config.compression);
   }
 
@@ -69,14 +66,8 @@ export abstract class OTLPExporterNodeBase<
     }
     const serviceRequest = this.convert(objects);
 
-    const promise = new Promise<void>((resolve, reject) => {
-      sendWithHttp(
-        this,
-        JSON.stringify(serviceRequest),
-        'application/json',
-        resolve,
-        reject
-      );
+    const promise = this._request(this.url, JSON.stringify(serviceRequest), {
+      contentType: 'application/json',
     }).then(onSuccess, onError);
 
     this._sendingPromises.push(promise);
