@@ -107,3 +107,10 @@ function isSpanContext(spanContext: any): spanContext is SpanContext {
     typeof spanContext['traceFlags'] === 'number'
   );
 }
+
+/**
+ * Create a no-op Tracer
+ */
+export function createNoopTracer(): Tracer {
+  return new NoopTracer();
+}

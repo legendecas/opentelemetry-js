@@ -98,6 +98,7 @@ export {
   INVALID_TRACEID,
   INVALID_SPAN_CONTEXT,
 } from './trace/invalid-span-constants';
+export { createNoopTracer } from './trace/NoopTracer';
 export type { TraceAPI } from './api/trace';
 
 // Split module-level variable definition into separate files to allow

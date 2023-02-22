@@ -153,5 +153,5 @@ export const NOOP_OBSERVABLE_UP_DOWN_COUNTER_METRIC =
  * Create a no-op Meter
  */
 export function createNoopMeter(): Meter {
-  return NOOP_METER;
+  return new NoopMeter();
 }

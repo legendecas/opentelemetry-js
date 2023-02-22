@@ -26,7 +26,7 @@ import {
   TraceFlags,
 } from '../../../src';
 import { NonRecordingSpan } from '../../../src/trace/NonRecordingSpan';
-import { NoopTracer } from '../../../src/trace/NoopTracer';
+import { createNoopTracer, NoopTracer } from '../../../src/trace/NoopTracer';
 
 describe('NoopTracer', () => {
   afterEach(() => {
@@ -103,5 +103,11 @@ describe('NoopTracer', () => {
       tracer.startActiveSpan(name, opts, context.active(), fn),
       1
     );
+  });
+});
+
+describe('createNoopTracer', () => {
+  it('should return NoopTracer', () => {
+    assert.ok(createNoopTracer() instanceof NoopTracer);
   });
 });
